@@ -1,0 +1,39 @@
+.TH GIT-EXTERNALS 1 "February 2025" "Git Externals Manual" "User Commands"
+.SH NAME
+git-externals \- Manage external Git repositories within a project
+.SH SYNOPSIS
+.B git externals
+[\fICOMMAND\fR] [\fIARGS\fR]
+.SH DESCRIPTION
+git-externals is a Git subcommand that helps manage external repositories as dependencies.
+.SH COMMANDS
+.TP
+.B sync
+Synchronizes all externals.
+.TP
+.B add <name> <url> <path> [--branch BRANCH] [--revision REVISION]
+Adds an external repository.
+.TP
+.B remove <name>
+Removes an external repository.
+.TP
+.B list
+Lists all configured externals.
+.TP
+.B help
+Displays this help message.
+.SH EXAMPLES
+Sync all externals:
+.B git externals sync
+.TP
+Add an external repo:
+.B git externals add repo1 git@bitbucket.org:user/repo.git fw --branch main
+.TP
+Remove an external:
+.B git externals remove repo1
+.TP
+List externals:
+.B git externals list
+.SH AUTHOR
+Written by Parth Patel.
+
