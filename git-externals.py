@@ -211,7 +211,7 @@ def main():
 
     subparsers.add_parser("list", help="List all configured externals")
 
-    args = parser.parse_args(['add'])
+    args = parser.parse_args()
 
     if args.command == "sync":
         sync_externals()
