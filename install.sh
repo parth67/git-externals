@@ -30,7 +30,7 @@ sudo mandb >/dev/null 2>&1 || echo "⚠️ mandb update skipped (not available).
 # Install Bash completion
 if [ -d "$BASH_COMPLETION_DIR" ]; then
     echo "🖥️ Installing Bash auto-completion..."
-    sudo curl -sSL "$REPO_URL/git-externals-completion.sh" -o "$BASH_COMPLETION_DIR/git-externals"
+    sudo curl -sSL "$REPO_URL/completion/bash/bash_completion.sh" -o "$BASH_COMPLETION_DIR/git-externals"
     sudo chmod +x "$BASH_COMPLETION_DIR/git-externals"
     source "$BASH_COMPLETION_DIR/git-externals"
 fi
@@ -39,7 +39,7 @@ fi
 if [ -d "$ZSH_COMPLETION_DIR" ]; then
     echo "🖥️ Installing Zsh auto-completion..."
     mkdir -p "$ZSH_COMPLETION_DIR"
-    curl -sSL "$REPO_URL/git-externals-completion.sh" -o "$ZSH_COMPLETION_DIR/_git-externals"
+    curl -sSL "$REPO_URL/completion/zsh/_zsh_completion" -o "$ZSH_COMPLETION_DIR/_git-externals"
     echo 'fpath=("$HOME/.zsh/completions" $fpath)' >> ~/.zshrc
     echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
     source ~/.zshrc
