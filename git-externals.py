@@ -45,20 +45,21 @@ def run_command(command, cwd=None, silent=False):
         sys.exit(1)
 
 
-def ensure_gitignore():
-    """Ensure that .externals is gitignored."""
+def ensure_gitignore(symlinks):
+    """Ensure that .externals and symlinks are gitignored."""
     gitignore_path = ".gitignore"
-    ignore_entry = ".externals/\n"
+    ignore_entries = [".externals/\n"] + [f"{link}\n" for link in symlinks]
 
     if os.path.exists(gitignore_path):
         with open(gitignore_path, "r") as f:
             lines = f.readlines()
-        if ignore_entry not in lines:
-            with open(gitignore_path, "a") as f:
-                f.write(ignore_entry)
+        with open(gitignore_path, "a") as f:
+            for entry in ignore_entries:
+                if entry not in lines:
+                    f.write(entry)
     else:
         with open(gitignore_path, "w") as f:
-            f.write(ignore_entry)
+            f.writelines(ignore_entries)
 
 
 def check_git_repository():
@@ -73,6 +74,7 @@ def sync_externals():
     check_git_repository()
     config = load_config()
     os.makedirs(EXTERNALS_DIR, exist_ok=True)
+    symlinks = []
 
     for external in config.get("externals", []):
         name, url, path = external["name"], external["url"], external["path"]
@@ -83,7 +85,7 @@ def sync_externals():
 
         if os.path.isdir(os.path.join(repo_path, ".git")):
             logging.info(f"Updating {name}...")
-            run_command("git fetch --all", cwd=repo_path, silent=True)
+            run_command("git pull --all", cwd=repo_path)
         else:
             logging.info(f"Cloning {name}...")
             clone_cmd = f"git clone {url} {repo_path}"
@@ -101,9 +103,10 @@ def sync_externals():
         if os.path.exists(path) or os.path.islink(path):
             os.remove(path)
         os.symlink(repo_path, path)
+        symlinks.append(path)
         logging.info(f"External '{name}' linked at '{path}'.")
 
-    ensure_gitignore()
+    ensure_gitignore(symlinks)
     logging.info("Externals sync complete.")
 
 
@@ -153,6 +156,18 @@ def update_external(name, branch=None, revision=None):
     sys.exit(1)
 
 
+def remove_gitignore_entry(entry):
+    """Remove an entry from .gitignore."""
+    gitignore_path = ".gitignore"
+    if os.path.exists(gitignore_path):
+        with open(gitignore_path, "r") as f:
+            lines = f.readlines()
+        with open(gitignore_path, "w") as f:
+            for line in lines:
+                if line.strip() != entry.strip():
+                    f.write(line)
+
+
 def remove_external(name):
     """Remove an external repository."""
     check_git_repository()
@@ -171,6 +186,7 @@ def remove_external(name):
     for external in config["externals"]:
         if external["name"] == name and os.path.islink(external["path"]):
             os.remove(external["path"])
+            remove_gitignore_entry(external["path"])
 
     if os.path.exists(repo_path):
         run_command(f"rm -rf {repo_path}")
