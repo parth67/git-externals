@@ -1,4 +1,4 @@
-#compdef git-externals
+#compdef git-externals git-externals git-external git externals
 
 _git_externals() {
     local -a commands externals
@@ -11,7 +11,7 @@ _git_externals() {
         'help:Show help information'
     )
 
-    # Load externals from the JSON file
+    # Load externals from the JSON file if available
     if [[ -f externals.json ]]; then
         externals=($(jq -r '.externals[].name' externals.json 2>/dev/null))
     else
@@ -42,4 +42,6 @@ _git_externals() {
     esac
 }
 
-compdef _git_externals git-externals
+# Register completion function for `git externals`
+compdef _git_externals git-externals='git externals'
+
