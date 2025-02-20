@@ -1,0 +1,11 @@
+{
+    "autopep8.args": [
+        "--max-line-length",
+        "150",
+        "--experimental"
+    ],
+    "autopep8.importStrategy": "useBundled",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8"
+    }
+}

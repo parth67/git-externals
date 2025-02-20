@@ -35,7 +35,8 @@ def save_config(config):
 def run_command(command, cwd=None, silent=False):
     """Run a shell command with error handling."""
     try:
-        result = subprocess.run(command, shell=True, cwd=cwd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(command, shell=True, cwd=cwd, check=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if not silent:
             logging.info(result.stdout.strip())
     except subprocess.CalledProcessError as e:
@@ -115,7 +116,8 @@ def add_external(name, url, path, branch=None, revision=None):
     config["externals"].append(new_entry)
     save_config(config)
 
-    logging.info(f"Added external {name}. Run 'git externals sync' to fetch it.")
+    logging.info(
+        f"Added external {name}. Run 'git externals sync' to fetch it.")
 
 
 def update_external(name, branch=None, revision=None):
@@ -126,12 +128,15 @@ def update_external(name, branch=None, revision=None):
         if external["name"] == name:
             if branch:
                 external["branch"] = branch
-                external.pop("revision", None)  # Remove revision if branch is updated
+                # Remove revision if branch is updated
+                external.pop("revision", None)
             if revision:
                 external["revision"] = revision
-                external.pop("branch", None)  # Remove branch if revision is updated
+                # Remove branch if revision is updated
+                external.pop("branch", None)
             save_config(config)
-            logging.info(f"Updated {name}: branch={branch}, revision={revision}")
+            logging.info(
+                f"Updated {name}: branch={branch}, revision={revision}")
             return
 
     logging.error(f"Error: External '{name}' not found.")
@@ -141,7 +146,8 @@ def update_external(name, branch=None, revision=None):
 def remove_external(name):
     """Remove an external repository."""
     config = load_config()
-    updated_externals = [e for e in config.get("externals", []) if e["name"] != name]
+    updated_externals = [e for e in config.get(
+        "externals", []) if e["name"] != name]
 
     if len(updated_externals) == len(config["externals"]):
         logging.error(f"Error: External '{name}' not found.")
@@ -174,13 +180,15 @@ def list_externals():
     for ext in externals:
         branch_info = f"(Branch: {ext['branch']})" if 'branch' in ext else ""
         revision_info = f"(Revision: {ext['revision']})" if 'revision' in ext else ""
-        logging.info(f"  - {ext['name']} → {ext['url']} @ {ext['path']} {branch_info} {revision_info}")
+        logging.info(
+            f"  - {ext['name']} → {ext['url']} @ {ext['path']} {branch_info} {revision_info}")
 
 
 def main():
     """Main function to handle CLI arguments using argparse."""
     parser = argparse.ArgumentParser(description="Manage git externals.")
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+    subparsers = parser.add_subparsers(
+        dest="command", help="Available commands")
 
     subparsers.add_parser("sync", help="Sync all externals")
 
@@ -191,22 +199,25 @@ def main():
     add_parser.add_argument("--branch", default=None)
     add_parser.add_argument("--revision", default=None)
 
-    update_parser = subparsers.add_parser("update", help="Update an external's branch or revision")
+    update_parser = subparsers.add_parser(
+        "update", help="Update an external's branch or revision")
     update_parser.add_argument("name")
     update_parser.add_argument("--branch", default=None)
     update_parser.add_argument("--revision", default=None)
 
-    remove_parser = subparsers.add_parser("remove", help="Remove an external repository")
+    remove_parser = subparsers.add_parser(
+        "remove", help="Remove an external repository")
     remove_parser.add_argument("name")
 
     subparsers.add_parser("list", help="List all configured externals")
 
-    args = parser.parse_args()
+    args = parser.parse_args(['add'])
 
     if args.command == "sync":
         sync_externals()
     elif args.command == "add":
-        add_external(args.name, args.url, args.path, args.branch, args.revision)
+        add_external(args.name, args.url, args.path,
+                     args.branch, args.revision)
     elif args.command == "update":
         update_external(args.name, args.branch, args.revision)
     elif args.command == "remove":

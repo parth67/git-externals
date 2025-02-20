@@ -1,0 +1,78 @@
+.TH GIT-EXTERNALS 1 "February 2025" "Git Externals Manual" "User Commands"
+.SH NAME
+git-externals \- Manage external Git repositories within a project
+.SH SYNOPSIS
+.B git externals
+[\fICOMMAND\fR] [\fIARGS\fR]
+.SH DESCRIPTION
+.B git-externals
+is a Git subcommand that helps manage external repositories as dependencies within a project.
+It allows for adding, updating, removing, and syncing external repositories while ensuring they are ignored by the parent repository.
+.SH COMMANDS
+.TP
+.B sync
+Synchronizes all externals. Clones repositories if missing, updates them if already present, and creates symlinks in the appropriate locations.
+.TP
+.B add <name> <url> <path> [--branch BRANCH] [--revision REVISION]
+Adds a new external repository.
+
+- \fIname\fR: Unique identifier for the external repository.
+- \fIurl\fR: Git repository URL.
+- \fIpath\fR: Path where the repository should be linked.
+- \fB--branch BRANCH\fR: (Optional) Branch to check out.
+- \fB--revision REVISION\fR: (Optional) Specific commit hash to check out.
+  
+If both \fB--branch\fR and \fB--revision\fR are specified, \fB--revision\fR takes precedence.
+.TP
+.B update <name> [--branch BRANCH] [--revision REVISION]
+Updates an existing external repository's branch or revision.
+
+- \fIname\fR: The name of the external repository to update.
+- \fB--branch BRANCH\fR: (Optional) Update to a different branch.
+- \fB--revision REVISION\fR: (Optional) Checkout a specific commit.
+
+If a revision is specified, the branch information is removed.
+.TP
+.B remove <name>
+Removes an external repository.
+
+- Deletes the symlink from the project.
+- Removes the repository from the hidden `.externals` directory.
+- Updates the `externals.json` configuration.
+.TP
+.B list
+Lists all configured externals with their names, repository URLs, paths, and branches or revisions.
+.TP
+.B help
+Displays this help message.
+.SH EXAMPLES
+Sync all externals:
+.B git externals sync
+.TP
+Add an external repo:
+.B git externals add repo1 git@bitbucket.org:user/repo.git fw --branch main
+.TP
+Update an external repo:
+.B git externals update repo1 --branch develop
+.TP
+Remove an external:
+.B git externals remove repo1
+.TP
+List all externals:
+.B git externals list
+.SH CONFIGURATION
+By default, `git-externals` reads from \fBexternals.json\fR. The location can be changed using the \fBGIT_EXTERNALS_FILE\fR environment variable:
+.PP
+.EX
+export GIT_EXTERNALS_FILE=my_custom_externals.json
+git externals sync
+.EE
+.SH FILES
+.TP
+.B externals.json
+Configuration file containing external repositories.
+.TP
+.B .externals/
+Directory where external repositories are cloned.
+.SH AUTHOR
+Written by Parth <parth67@gmail.com>.
