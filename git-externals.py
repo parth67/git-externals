@@ -61,8 +61,16 @@ def ensure_gitignore():
             f.write(ignore_entry)
 
 
+def check_git_repository():
+    """Check if the current directory is a Git repository."""
+    if not os.path.isdir(".git"):
+        logging.error("Error: Current directory is not a Git repository.")
+        sys.exit(1)
+
+
 def sync_externals():
     """Sync all external repositories."""
+    check_git_repository()
     config = load_config()
     os.makedirs(EXTERNALS_DIR, exist_ok=True)
 
@@ -101,6 +109,7 @@ def sync_externals():
 
 def add_external(name, url, path, branch=None, revision=None):
     """Add a new external repository."""
+    check_git_repository()
     config = load_config()
 
     if any(ext["name"] == name for ext in config.get("externals", [])):
@@ -122,6 +131,7 @@ def add_external(name, url, path, branch=None, revision=None):
 
 def update_external(name, branch=None, revision=None):
     """Update an existing external repository's branch or revision."""
+    check_git_repository()
     config = load_config()
 
     for external in config.get("externals", []):
@@ -145,6 +155,7 @@ def update_external(name, branch=None, revision=None):
 
 def remove_external(name):
     """Remove an external repository."""
+    check_git_repository()
     config = load_config()
     updated_externals = [e for e in config.get(
         "externals", []) if e["name"] != name]
@@ -169,6 +180,7 @@ def remove_external(name):
 
 def list_externals():
     """List all configured externals."""
+    check_git_repository()
     config = load_config()
     externals = config.get("externals", [])
 
@@ -190,26 +202,26 @@ def main():
     subparsers = parser.add_subparsers(
         dest="command", help="Available commands")
 
-    subparsers.add_parser("sync", help="Sync all externals")
+    subparsers.add_parser("sync", help="Sync all external repositories")
 
-    add_parser = subparsers.add_parser("add", help="Add a new external")
-    add_parser.add_argument("name")
-    add_parser.add_argument("url")
-    add_parser.add_argument("path")
-    add_parser.add_argument("--branch", default=None)
-    add_parser.add_argument("--revision", default=None)
+    add_parser = subparsers.add_parser("add", help="Add a new external repository")
+    add_parser.add_argument("name", help="Unique identifier for the external repository")
+    add_parser.add_argument("url", help="Git repository URL")
+    add_parser.add_argument("path", help="Path where the repository should be linked")
+    add_parser.add_argument("--branch", default=None, help="Branch to check out (optional)")
+    add_parser.add_argument("--revision", default=None, help="Specific commit hash to check out (optional)")
 
     update_parser = subparsers.add_parser(
-        "update", help="Update an external's branch or revision")
-    update_parser.add_argument("name")
-    update_parser.add_argument("--branch", default=None)
-    update_parser.add_argument("--revision", default=None)
+        "update", help="Update an external repository's branch or revision")
+    update_parser.add_argument("name", help="The name of the external repository to update")
+    update_parser.add_argument("--branch", default=None, help="Update to a different branch (optional)")
+    update_parser.add_argument("--revision", default=None, help="Checkout a specific commit (optional)")
 
     remove_parser = subparsers.add_parser(
         "remove", help="Remove an external repository")
-    remove_parser.add_argument("name")
+    remove_parser.add_argument("name", help="The name of the external repository to remove")
 
-    subparsers.add_parser("list", help="List all configured externals")
+    subparsers.add_parser("list", help="List all configured external repositories")
 
     args = parser.parse_args()
 
