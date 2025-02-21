@@ -1,0 +1,69 @@
+#compdef __git_externals
+#description Completion script for git-externals
+
+function __git_externals() {
+    local curcontext="$curcontext" state line ret=1
+    local -a _command_args
+    local -a _git_externals_commands
+    
+    _git_externals_commands=(
+        "sync:Sync all external repositories"
+        "add:Add a new external repository"
+        "update:Update an external repository's branch or revision"
+        "remove:Remove an external repository"
+        "list:List all configured external repositories"
+    )
+
+    _arguments -C \
+        '1: :->command' \
+        '*: :->args' && ret=0
+
+    case $state in
+        command)
+            _describe -t commands "git externals commands" _git_externals_commands && ret=0
+            ;;
+        args)
+            case $line[1] in
+                add)
+                    _arguments \
+                        '1:name:' \
+                        '2:url:_urls' \
+                        '3:path:_files' \
+                        '--branch[Branch to check out]:branch:->branches' \
+                        '--revision[Specific commit hash to check out]:revision:' && ret=0
+                    ;;
+                update)
+                    _arguments \
+                        '1:name:->externals' \
+                        '--branch[Update to a different branch]:branch:->branches' \
+                        '--revision[Checkout a specific commit]:revision:' && ret=0
+                    ;;
+                remove)
+                    _arguments \
+                        '1:name:->externals' && ret=0
+                    ;;
+            esac
+
+            case $state in
+                externals)
+                    local -a externals
+                    if [[ -f externals.json ]]; then
+                        externals=(${(f)"$(jq -r '.externals[].name' externals.json 2>/dev/null)"})
+                        _describe -t externals "external repositories" externals && ret=0
+                    fi
+                    ;;
+                branches)
+                    local -a branches
+                    branches=(${(f)"$(git branch --list --format '%(refname:short')"})
+                    _describe -t branches "git branches" branches && ret=0
+                    ;;
+            esac
+            ;;
+    esac
+
+    return ret
+}
+
+
+# Function to handle git-externals as a standalone command
+compdef __git_externals git-externals

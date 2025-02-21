@@ -38,4 +38,4 @@ _git_externals() {
     fi
 }
 
-complete -F _git_externals git-externals
+#complete -F _git_externals git-externals
