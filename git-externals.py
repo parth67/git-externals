@@ -64,7 +64,7 @@ def ensure_gitignore(symlinks):
     """Ensure that .externals and symlinks are gitignored."""
     git_root = get_git_root()
     gitignore_path = os.path.join(git_root, ".gitignore")
-    ignore_entries = [".externals/\n"] + [f"{link}\n" for link in symlinks]
+    ignore_entries = [".externals/\n"] + [f"{os.path.relpath(link, git_root)}\n" for link in symlinks]
 
     if os.path.exists(gitignore_path):
         with open(gitignore_path, "r") as f:
@@ -194,22 +194,23 @@ def remove_gitignore_entry(entry):
 def remove_external(name):
     """Remove an external repository."""
     # check_git_repository()
+    git_root = get_git_root()
     config = load_config()
-    updated_externals = [e for e in config.get(
-        "externals", []) if e["name"] != name]
+
+    updated_externals = [e for e in config.get("externals", []) if e["name"] != name]
 
     if len(updated_externals) == len(config["externals"]):
         logging.error(f"Error: External '{name}' not found.")
         return
 
+    repo_path = os.path.join(git_root, EXTERNALS_DIR, name)
+    for external in config["externals"]:
+        if external["name"] == name and os.path.islink(os.path.join(git_root, external["path"])):
+            os.remove(os.path.join(git_root, external["path"]))
+            remove_gitignore_entry(os.path.relpath(os.path.join(git_root, external["path"]), git_root))
+
     config["externals"] = updated_externals
     save_config(config)
-
-    repo_path = os.path.join(EXTERNALS_DIR, name)
-    for external in config["externals"]:
-        if external["name"] == name and os.path.islink(external["path"]):
-            os.remove(external["path"])
-            remove_gitignore_entry(external["path"])
 
     if os.path.exists(repo_path):
         run_command(f"rm -rf {repo_path}")
@@ -247,14 +248,16 @@ def main():
     add_parser.add_argument("name", help="Unique identifier for the external repository")
     add_parser.add_argument("url", help="Git repository URL")
     add_parser.add_argument("path", help="Path where the repository should be linked")
-    add_parser.add_argument("--branch", default=None, help="Branch to check out (optional)")
-    add_parser.add_argument("--revision", default=None, help="Specific commit hash to check out (optional)")
+    branch_revision_group = add_parser.add_mutually_exclusive_group(required=True)
+    branch_revision_group.add_argument("-b", "--branch", help="Branch to check out")
+    branch_revision_group.add_argument("-r", "--revision", help="Specific commit hash to check out")
 
     update_parser = subparsers.add_parser(
         "update", help="Update an external repository's branch or revision")
     update_parser.add_argument("name", help="The name of the external repository to update")
-    update_parser.add_argument("--branch", default=None, help="Update to a different branch (optional)")
-    update_parser.add_argument("--revision", default=None, help="Checkout a specific commit (optional)")
+    branch_revision_group = update_parser.add_mutually_exclusive_group(required=True)
+    branch_revision_group.add_argument("-b", "--branch", help="Branch to check out")
+    branch_revision_group.add_argument("-r", "--revision", help="Specific commit hash to check out")
 
     remove_parser = subparsers.add_parser(
         "remove", help="Remove an external repository")
