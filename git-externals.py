@@ -18,7 +18,7 @@ def get_git_root():
     """Get the root directory of the current Git repository."""
     try:
         result = subprocess.run("git rev-parse --show-toplevel", shell=True, check=True,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         return result.stdout.strip()
     except subprocess.CalledProcessError:
         logging.error("Error: Current directory is not a Git repository.")
@@ -51,7 +51,7 @@ def run_command(command, cwd=None, silent=False):
     """Run a shell command with error handling."""
     try:
         result = subprocess.run(command, shell=True, cwd=cwd, check=True,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if not silent:
             logging.info(result.stdout.strip())
     except subprocess.CalledProcessError as e:
