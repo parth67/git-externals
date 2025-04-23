@@ -30,7 +30,7 @@ sudo mandb >/dev/null 2>&1 || echo "⚠️ mandb update skipped (not available).
 # Install Bash completion
 if [ -d "$BASH_COMPLETION_DIR" ]; then
     echo "🖥️ Installing Bash auto-completion..."
-    sudo curl -sSL "$REPO_URL/completion/bash/bash_completion.sh" -o "$BASH_COMPLETION_DIR/git-externals"
+    sudo curl -sSL "$REPO_URL/completion/bash/bash_completion.bash" -o "$BASH_COMPLETION_DIR/git-externals"
     sudo chmod +x "$BASH_COMPLETION_DIR/git-externals"
     source "$BASH_COMPLETION_DIR/git-externals"
 fi
