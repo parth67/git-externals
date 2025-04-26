@@ -96,6 +96,7 @@ def sync_externals():
     for external in config.get("externals", []):
         name, url, path = external["name"], external["url"], external["path"]
         branch, revision = external.get("branch"), external.get("revision")
+        sparse_path = external.get("sparse_path")
         if os.path.isabs(path):
             logging.error(f"Error: Path '{path}' is an absolute path. path attribute must be relative to the git root.")
             sys.exit(1)
@@ -113,6 +114,12 @@ def sync_externals():
             if branch:
                 clone_cmd += f" --branch {branch}"
             run_command(clone_cmd)
+
+        # Enable sparse-checkout if sparse_path is specified
+        if sparse_path:
+            logging.info(f"Setting up sparse-checkout for {name}...")
+            run_command("git sparse-checkout init --cone", cwd=repo_path)
+            run_command(f"git sparse-checkout set {sparse_path}", cwd=repo_path)
 
         # Checkout specific revision or branch
         if revision:
